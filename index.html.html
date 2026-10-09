@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maximo's Game — Completo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+
+  body {
+    min-height: 100vh;
+    padding: 20px;
+    background:
+      linear-gradient(135deg, #9932cc 0%, #6a1b9a 40%, #f9b834 100%);
+    background-size: cover;
+    background-attachment: fixed;
+    color: #222;
+    position: relative;
+  }
+
+  /* Imagens dos personagens no fundo */
+  body::before, body::after {
+    content: "";
+    position: fixed;
+    width: 280px;
+    height: 380px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.15;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  body::before {
+    background-image: url('paloma.jpg');
+    top: 10%;
+    left: 3%;
+  }
+
+  body::after {
+    background-image: url('maximo.jpg');
+    bottom: 5%;
+    right: 3%;
+  }
+
+  .pagina {
+    background: rgba(255, 255, 255, 0.95);
+    border: 4px solid #9932cc;
+    border-radius: 12px;
+    min-height: 90vh;
+    padding: 40px;
+    max-width: 850px;
+    margin: 0 auto;
+    display: none;
+    box-shadow: 0 0 25px rgba(0,0,0,0.35);
+    position: relative;
+    z-index: 1;
+  }
+
+  .pagina.ativa { display: block; }
+
+  .etiqueta {
+    color: #fff;
+    background: #9932cc;
+    font-weight: bold;
+    font-size: 1.3em;
+    margin-bottom: 10px;
+    display: inline-block;
+    border: 3px solid #f9b834;
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+
+  .fundo-nota {
+    color: #666;
+    font-size: 1.2em;
+    margin-bottom: 30px;
+  }
+
+  .titulo-pagina {
+    font-size: 2.8em;
+    font-weight: bold;
+    margin-bottom: 40px;
+    color: #9932cc;
+  }
+
+  .navegacao-paginas {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .nav-btn {
+    padding: 12px 30px;
+    margin: 0 8px;
+    font-size: 1em;
+    background: #9932cc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: 0.2s;
+  }
+
+  .nav-btn:hover {
+    background: #7b1fa2;
+    transform: translateY(-2px);
+  }
+
+  .bilingue {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+
+  .coluna {
+    flex: 1;
+    min-width: 300px;
+  }
+
+  h2 {
+    margin: 25px 0 10px;
+    color: #9932cc;
+    border-bottom: 3px solid #f9b834;
+    padding-bottom: 5px;
+  }
+
+  .coluna p, .coluna h3 {
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+
+  .contador {
+    text-align: right;
+    font-size: 1.1em;
+    color: #555;
+    margin-bottom: 15px;
+  }
+
+  .pergunta-texto {
+    font-size: 1.2em;
+    margin-bottom: 35px;
+    line-height: 1.6;
+    min-height: 80px;
+  }
+
+  .respostas-container {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 40px;
+  }
+
+  .resposta-card {
+    background: linear-gradient(135deg, #f5f0dc, #fff8c8);
+    border: 4px solid #9932cc;
+    border-radius: 12px;
+    width: 200px;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em;
+    cursor: pointer;
+    transition: 0.2s;
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    color: #9932cc;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .resposta-card:hover {
+    background: linear-gradient(135deg, #f9e9b8, #fff2a8);
+    transform: scale(1.05);
+  }
+
+  .resposta-card.correct {
+    background: #90ee90;
+    border-color: #2e8b2e;
+    color: #2e8b2e;
+  }
+
+  .resposta-card.wrong {
+    background: #ffb6c1;
+    border-color: #cd5c5c;
+    color: #cd5c5c;
+  }
+
+  .ponto {
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    margin: 0 4px;
+    box-shadow: 0 0 8px rgba(255,255,255,0.8);
+  }
+
+  .separador {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .feedback {
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    display: none;
+    font-weight: bold;
+    line-height: 1.5;
+  }
+
+  .navegacao-cartas {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+  }
+
+  .btn {
+    padding: 10px 25px;
+    font-size: 1em;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background: #9932cc;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    transition: 0.2s;
+  }
+
+  .btn:hover {
+    background: #7b1fa2;
+    transform: translateY(-2px);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+  }
+
+  th {
+    background: linear-gradient(135deg, #9932cc, #7b1fa2);
+    color: #fff;
+    font-weight: bold;
+  }
+
+  tr:hover {
+    background: #f9f3e8;
+  }
+
+  .num {
+    font-weight: bold;
+    width: 50px;
+    color: #9932cc;
+  }
+
+  .resp {
+    font-weight: bold;
+    color: #2e8b2e;
+  }
+
+  .linha-pt {
+    color: #333;
+    font-style: italic;
+    font-size: 0.9em;
+  }
+</style>
+</head>
+<body>
+
+<!-- BOTÕES DE NAVEGAÇÃO ENTRE PÁGINAS -->
+<div class="navegacao-paginas">
+  <button class="nav-btn" onclick="abrirPagina(1)">📖 Manual / Manual</button>
+  <button class="nav-btn" onclick="abrirPagina(2)">🎮 Perguntas / Questions</button>
+  <button class="nav-btn" onclick="abrirPagina(3)">✅ Gabarito / Answer Key</button>
+</div>
+
+<!-- ============================================== -->
+<!-- PÁGINA 1 — MANUAL -->
+<div class="pagina ativa" id="pagina1">
+  <span class="etiqueta">pagina 1</span>
+  <p class="fundo-nota">fundo temático (visual)</p>
+  <h1 class="titulo-pagina">pagina do manual</h1>
+
+  <div class="bilingue">
+    <div class="coluna">
+      <h2>📖 MANUAL — PORTUGUÊS</h2>
+      <p><strong>Nome do jogo:</strong> Maximo's Game — O Desafio do Capítulo</p>
+      <p><strong>Objetivo:</strong> Responder corretamente as perguntas sobre o Capítulo 4 e vencer o jogo de Maximo.</p>
+      <p><strong>Nº de jogadores:</strong> 1 a 4</p>
+      <p><strong>Idade recomendada:</strong> A partir de 10 anos</p>
+      <p><strong>Duração:</strong> 15 a 30 minutos</p>
+      <p><strong>Componentes:</strong> 20 cartas de pergunta, este manual, gabarito</p>
+      
+      <h3>Preparação</h3>
+      <p>1. Clique em "Perguntas / Questions" para iniciar o jogo<br>
+      2. O gabarito está na página 3 — não consulte antes de responder!<br>
+      3. Defina a ordem dos turnos entre os jogadores</p>
+      
+      <h3>Como jogar</h3>
+      <p>• Leia a pergunta e escolha UMA das três opções (A, B ou C)<br>
+      • Fica verde ✅ = acertou → soma 1 ponto<br>
+      • Fica vermelho ❌ = errou → não soma ponto<br>
+      • Clique em "Próxima / Next" para continuar</p>
+      
+      <h3>Como vencer</h3>
+      <p>O jogador com mais pontos ao final vence.<br>Em caso de empate: jogue mais uma rodada!</p>
+    </div>
+    
+    <div class="coluna">
+      <h2>📖 INSTRUCTION MANUAL — ENGLISH</h2>
+      <p><strong>Game name:</strong> Maximo's Game — The Chapter Challenge</p>
+      <p><strong>Objective:</strong> Answer questions correctly about Chapter 4 and win Maximo's game.</p>
+      <p><strong>Number of players:</strong> 1 to 4</p>
+      <p><strong>Recommended age:</strong> 10 years and older</p>
+      <p><strong>Playing time:</strong> 15 to 30 minutes</p>
+      <p><strong>Components:</strong> 20 question cards, this manual, answer key</p>
+      
+      <h3>Preparation</h3>
+      <p>1. Click "Perguntas / Questions" to start the game<br>
+      2. The answer key is on page 3 — do not look before answering!<br>
+      3. Decide the turn order among players</p>
+      
+      <h3>How to Play</h3>
+      <p>• Read the question and choose ONE of the three options (A, B or C)<br>
+      • Green ✅ = correct → earn 1 point<br>
+      • Red ❌ = incorrect → no point<br>
+      • Click "Próxima / Next" to continue</p>
+      
+      <h3>How to Win</h3>
+      <p>The player with the highest score wins.<br>In case of a tie: play one more round!</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- PÁGINA 2 — PERGUNTAS -->
+<div class="pagina" id="pagina2">
+  <span class="etiqueta">pagina 2</span>
+  <p class="fundo-nota">fundo e cartas temáticas (visual)</p>
+  <h1 class="titulo-pagina">pergunta / question</h1>
+  
+  <div class="contador">Card <span id="cardNum">1</span> de 20 / of 20 | Pontos / Score: <span id="score">0</span></div>
+  
+  <div class="pergunta-texto" id="perguntaTexto"></div>
+  
+  <!-- EXATAMENTE O SEU DESENHO: 3 CARTAS + PONTOS ENTRE -->
+  <div class="respostas-container" id="respostasArea">
+    <div class="resposta-card" id="opt0" onclick="escolher(0)"><span id="txt0">A</span></div>
+    <div class="separador"><div class="ponto"></div><div class="ponto"></div><div class="ponto"></div><div class="ponto"></div></div>
+    <div class="resposta-card" id="opt1" onclick="escolher(1)"><span id="txt1">B</span></div>
+    <div class="separador"><div class="ponto"></div><div class="ponto"></div><div class="ponto"></div><div class="ponto"></div></div>
+    <div class="resposta-card" id="opt2" onclick="escolher(2)"><span id="txt2">C</span></div>
+  </div>
+  
+  <div class="feedback" id="feedback"></div>
+  
+  <div class="navegacao-cartas">
+    <button class="btn" id="btnAnterior" onclick="anterior()" disabled>← Anterior / Previous</button>
+    <button class="btn" id="btnProximo" onclick="proximo()" disabled>Próxima / Next →</button>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- PÁGINA 3 — GABARITO -->
+<div class="pagina" id="pagina3">
+  <span class="etiqueta">pagina 3</span>
+  <p class="fundo-nota">fundo temático (visual)</p>
+  <h1 class="titulo-pagina">gabarito / answer key</h1>
+
+  <table>
+    <tr>
+      <th>Nº</th>
+      <th>Resposta Correta / Correct Answer</th>
+      <th>Explicação / Explanation</th>
+    </tr>
+    <tr>
+      <td class="num">1</td>
+      <td class="resp">B — Sorry and nervous</td>
+      <td>Paloma says "I always say sorry…" and acts nervously.<br>
+      <span class="linha-pt">Paloma diz "Eu sempre peço desculpas…" e age com nervosismo.</span></td>
+    </tr>
+    <tr>
+      <td class="num">2</td>
+      <td class="resp">A — I am Maximo</td>
+      <td>He introduces himself: "my name is Maximo."<br>
+      <span class="linha-pt">Ele se apresenta: "meu nome é Maximo."</span></td>
+    </tr>
+    <tr>
+      <td class="num">3</td>
+      <td class="resp">C — False / Not present</td>
+      <td>Her father is not in the kitchen; she only talks about him.<br>
+      <span class="linha-pt">O pai não está na cozinha; ela apenas fala sobre ele.</span></td>
+    </tr>
+    <tr>
+      <td class="num">4</td>
+      <td class="resp">B — Paloma's life completely</td>
+      <td>Maximo tells her the money would change her life.<br>
+      <span class="linha-pt">Maximo diz que o dinheiro mudaria a vida dela.</span></td>
+    </tr>
+    <tr>
+      <td class="num">5</td>
+      <td class="resp">A — He isn't usually calm there</td>
+      <td>She is confused because he seems calm — which is unusual.<br>
+      <span class="linha-pt">Ela estranha ele estar calmo — isso não é comum.</span></td>
+    </tr>
+    <tr>
+      <td class="num">6</td>
+      <td class="resp">C — The Big Man</td>
+      <td>He compares his name to the Big Man's name.<br>
+      <span class="linha-pt">Ele compara seu nome ao do Homem Grande.</span></td>
+    </tr>
+    <tr>
+      <td class="num">7</td>
+      <td class="resp">B — More scared</td>
+      <td>She feels fear when the Big Man is mentioned.<br>
+      <span class="linha-pt">Ela sente medo quando o Homem Grande é mencionado.</span></td>
+    </tr>
+    <tr>
+      <td class="num">8</td>
+      <td class="resp">C — Get her away from the Big Man</td>
+      <td>She thinks the money might help her escape the Big Man.<br>
+      <span class="linha-pt">Ela acha que o dinheiro pode ajudá-la a fugir do Homem Grande.</span></td>
+    </tr>
+    <tr>
+      <td class="num">9</td>
+      <td class="resp">B — False</td>
+      <td>He says "Of course you have a choice" — he does not force her.<br>
+      <span class="linha-pt">Ele diz "Claro que você tem escolha" — não a força.</span></td>
+    </tr>
+    <tr>
+      <td class="num">10</td>
+      <td class="resp">A — Paloma</td>
+      <td>He tells Paloma the choice belongs to her.<br>
+      <span class="linha-pt">Ele diz a Paloma que a escolha é dela.</span></td>
+    </tr>
+    <tr>
+      <td class="num">11</td>
+      <td class="resp">B — A machine answers</td>
+      <td>The phone rings and a machine answers.<br>
+      <span class="linha-pt">O telefone toca e uma máquina atende.</span></td>
+    </tr>
+    <tr>
+      <td class="num">12</td>
+      <td class="resp">C — Five</td>
+      <td>She reads: One, two, three, four, five.<br>
+      <span class="linha-pt">Ela lê: Um, dois, três, quatro, cinco.</span></td>
+    </tr>
+    <tr>
+      <td class="num">13</td>
+      <td class="resp">A — Someone will come and get you soon</td>
+      <td>Exact message: "Someone will come and get you soon."<br>
+      <span class="linha-pt">Mensagem exata: "Alguém virá buscar você em breve."</span></td>
+    </tr>
+    <tr>
+      <td class="num">14</td>
+      <td class="resp">B — Flint</td>
+      <td>"My friend Flint designed the game."<br>
+      <span class="linha-pt">"Meu amigo Flint criou o jogo."</span></td>
+    </tr>
+    <tr>
+      <td class="num">15</td>
+      <td class="resp">C — They will meet and she can win a prize</td>
+      <td>They will meet and she can win the prize.<br>
+      <span class="linha-pt">Eles se encontrarão e ela poderá ganhar o prêmio.</span></td>
+    </tr>
+    <tr>
+      <td class="num">16</td>
+      <td class="resp">B — I only gamble on winners</td>
+      <td>Exact quote: "I only gamble on winners."<br>
+      <span class="linha-pt">Frase exata: "Eu só aposto em vencedores."</span></td>
+    </tr>
+    <tr>
+      <td class="num">17</td>
+      <td class="resp">A — Hot but also very cold and scared</td>
+      <td>"Although it's hot in the kitchen… I feel very cold and scared."<br>
+      <span class="linha-pt">"Embora esteja quente… sinto muito frio e medo."</span></td>
+    </tr>
+    <tr>
+      <td class="num">18</td>
+      <td class="resp">C — Play and go away from everything she knows</td>
+      <td>She decides to play and leave everything she knows.<br>
+      <span class="linha-pt">Ela decide jogar e ir embora de tudo que conhece.</span></td>
+    </tr>
+    <tr>
+      <td class="num">19</td>
+      <td class="resp">B — A million dollars</td>
+      <td>The prize offered is one million dollars.<br>
+      <span class="linha-pt">O prêmio oferecido é um milhão de dólares.</span></td>
+    </tr>
+    <tr>
+      <td class="num">20</td>
+      <td class="resp">C — Very scared</td>
+      <td>Final line: "I'm suddenly very scared."<br>
+      <span class="linha-pt">Última frase: "De repente estou com muito medo."</span></td>
+    </tr>
+  </table>
+</div>
+
+<script>
+// === NAVEGAÇÃO ENTRE PÁGINAS ===
+function abrirPagina(num) {
+  document.querySelectorAll('.pagina').forEach(p => p.classList.remove('ativa'));
+  document.getElementById('pagina'+num).classList.add('ativa');
+  if(num === 2) carregarPergunta();
+}
+
+// === DADOS DAS PERGUNTAS — RESPOSTAS VARIAM ENTRE A, B, C ===
+const perguntas = [
+  { 
+    q: "How does Paloma feel when Maximo first comes up to her?",
+    o: [
+      {t: "Angry and shouting", c: false},
+      {t: "Sorry and nervous", c: true},
+      {t: "Excited and happy", c: false}
+    ],
+    exp: "Paloma says 'I always say sorry…' and acts nervously."
+  },
+  { 
+    q: "What does Maximo say his name is?",
+    o: [
+      {t: "I am Maximo", c: true},
+      {t: "I am the Big Man", c: false},
+      {t: "Call me Flint", c: false}
+    ],
+    exp: "He introduces himself: 'my name is Maximo.'"
+  },
+  { 
+    q: "True or False: Paloma's father is in the kitchen with them.",
+    o: [
+      {t: "True", c: false},
+      {t: "He is cooking", c: false},
+      {t: "False — He is not there", c: true}
+    ],
+    exp: "Her father is not present — she only talks about him."
+  },
+  { 
+    q: "According to Maximo, what could a million dollars change?",
+    o: [
+      {t: "Nothing at all", c: false},
+      {t: "Paloma's life completely", c: true},
+      {t: "Only the weather", c: false}
+    ],
+    exp: "Maximo says the money would change her life."
+  },
+  { 
+    q: "Why is Paloma confused about her father?",
+    o: [
+      {t: "He isn't usually calm there", c: true},
+      {t: "He is never home", c: false},
+      {t: "He doesn't know Maximo", c: false}
+    ],
+    exp: "She doesn't know why he is calm — it is unusual."
+  },
+  { 
+    q: "Maximo compares his name to whom?",
+    o: [
+      {t: "Paloma's father", c: false},
+      {t: "Flint", c: false},
+      {t: "The Big Man", c: true}
+    ],
+    exp: "He compares his name to the Big Man's name."
+  },
+  { 
+    q: "How does Paloma react when the Big Man is mentioned?",
+    o: [
+      {t: "She feels safe", c: false},
+      {t: "She becomes more scared", c: true},
+      {t: "She gets angry", c: false}
+    ],
+    exp: "She feels fear when the Big Man is mentioned."
+  },
+  { 
+    q: "What does Paloma think the money might do?",
+    o: [
+      {t: "Buy a new house", c: false},
+      {t: "Make her famous", c: false},
+      {t: "Get her away from the Big Man", c: true}
+    ],
+    exp: "She thinks it might help her escape the Big Man."
+  },
+  { 
+    q: "True or False: Maximo forces Paloma to play the game.",
+    o: [
+      {t: "True", c: false},
+      {t: "False — She has a choice", c: true},
+      {t: "He asks her brother", c: false}
+    ],
+    exp: "He says 'Of course you have a choice' — he does not force her."
+  },
+  { 
+    q: "Who has the choice whether to play or not?",
+    o: [
+      {t: "Paloma", c: true},
+      {t: "The Big Man", c: false},
+      {t: "Maximo", c: false}
+    ],
+    exp: "He tells Paloma the choice is hers."
+  },
+  { 
+    q: "What happens when Maximo hands Paloma the phone?",
+    o: [
+      {t: "Her father calls", c: false},
+      {t: "A machine answers", c: true},
+      {t: "It does not work", c: false}
+    ],
+    exp: "The phone rings and a machine answers."
+  },
+  { 
+    q: "How many numbers does Paloma read to the machine?",
+    o: [
+      {t: "Three", c: false},
+      {t: "Four", c: false},
+      {t: "Five", c: true}
+    ],
+    exp: "She reads: One, two, three, four, five."
+  },
+  { 
+    q: "What message does the machine give?",
+    o: [
+      {t: "Someone will come and get you soon", c: true},
+      {t: "You have won the prize", c: false},
+      {t: "Call back later", c: false}
+    ],
+    exp: "Exact message: 'Someone will come and get you soon.'"
+  },
+  { 
+    q: "Who designed the game, according to Maximo?",
+    o: [
+      {t: "Maximo himself", c: false},
+      {t: "Flint", c: true},
+      {t: "Paloma's father", c: false}
+    ],
+    exp: "'My friend Flint designed the game.'"
+  },
+  { 
+    q: "Where will Maximo meet Paloma at the end of the game?",
+    o: [
+      {t: "In the kitchen", c: false},
+      {t: "At her school", c: false},
+      {t: "They will meet and she can win a prize", c: true}
+    ],
+    exp: "They will meet and she can win the prize."
+  },
+  { 
+    q: "What does Maximo say about winning?",
+    o: [
+      {t: "Everyone can win", c: false},
+      {t: "I only gamble on winners", c: true},
+      {t: "It's just for fun", c: false}
+    ],
+    exp: "Exact quote: 'I only gamble on winners.'"
+  },
+  { 
+    q: "How does Paloma feel in the kitchen while playing?",
+    o: [
+      {t: "Hot but also very cold and scared", c: true},
+      {t: "Comfortable and happy", c: false},
+      {t: "Tired and sleepy", c: false}
+    ],
+    exp: "'Although it's hot in the kitchen… I feel very cold and scared.'"
+  },
+  { 
+    q: "What does Paloma decide to do at the end?",
+    o: [
+      {t: "Refuse and run away", c: false},
+      {t: "Ask her brother for help", c: false},
+      {t: "Play and go away from everything she knows", c: true}
+    ],
+    exp: "She decides to play and leave everything she knows."
+  },
+  { 
+    q: "What is the prize Maximo offers?",
+    o: [
+      {t: "A big house", c: false},
+      {t: "A million dollars", c: true},
+      {t: "A boat", c: false}
+    ],
+    exp: "The prize offered is one million dollars."
+  },
+  { 
+    q: "Which word best describes Paloma at the very end?",
+    o: [
+      {t: "Confident", c: false},
+      {t: "Angry", c: false},
+      {t: "Very scared", c: true}
+    ],
+    exp: "Final line: 'I'm suddenly very scared.'"
+  }
+];
+
+let atual = 0, pontos = 0, respondeu = false;
+
+function carregarPergunta() {
+  const p = perguntas[atual];
+  document.getElementById("cardNum").textContent = atual + 1;
+  document.getElementById("score").textContent = pontos;
+  document.getElementById("perguntaTexto").textContent = p.q;
+  
+  // Embaralha as opções para não ficar sempre na mesma posição
+  const embaralhado = [...p.o].sort(() => Math.random() - 0.5);
+  
+  for(let i=0; i<3; i++) {
+    const letra = ['A', 'B', 'C'][i];
+    document.getElementById("txt"+i).textContent = letra + ") " + embaralhado[i].t;
+    document.getElementById("opt"+i).classList.remove("correct", "wrong");
+    // Armazena se está correta no elemento
+    document.getElementById("opt"+i).dataset.correct = embaralhado[i].c;
+  }
+  
+  document.getElementById("feedback").style.display = "none";
+  respondeu = false;
+  document.getElementById("btnProximo").disabled = true;
+  document.getElementById("btnAnterior").disabled = atual === 0;
+}
+
+function escolher(i) {
+  if(respondeu) return;
+  respondeu = true;
+  
+  const acertou = document.getElementById("opt"+i).dataset.correct === "true";
+  
+  if(acertou) {
+    document.getElementById("opt"+i).classList.add("correct");
+    pontos++;
+    document.getElementById("feedback").style.display = "block";
+    document.getElementById("feedback").style.background = "#90ee90";
+    document.getElementById("feedback").innerHTML = 
+      "✅ CORRECT! / ACERTOU! — " + perguntas[atual].exp;
+  } else {
+    document.getElementById("opt"+i).classList.add("wrong");
+    // Mostra qual é a certa
+    for(let j=0; j<3; j++) {
+      if(document.getElementById("opt"+j).dataset.correct === "true") {
+        document.getElementById("opt"+j).classList.add("correct");
+        break;
+      }
+    }
+    document.getElementById("feedback").style.display = "block";
+    document.getElementById("feedback").style.background = "#ffb6c1";
+    document.getElementById("feedback").innerHTML = 
+      "❌ WRONG! / ERROU! — " + perguntas[atual].exp;
+  }
+  
+  document.getElementById("score").textContent = pontos;
+  document.getElementById("btnProximo").disabled = false;
+}
+
+function proximo() {
+  if(atual < perguntas.length - 1) { 
+    atual++; carregarPergunta(); 
+  } else {
+    let mensagem = "";
+    if(pontos === 20) {
+      mensagem = "🌟 PERFEITO / PERFECT! Você acertou tudo!";
+    } else if(pontos >= 15) {
+      mensagem = "👏 Muito bem / Well done! Você conhece bem a história!";
+    } else if(pontos >= 10) {
+      mensagem = "👍 Bom trabalho / Good work! Continue estudando!";
+    } else {
+      mensagem = "📖 Leia o capítulo novamente e tente / Read again and try!";
+    }
+    alert(`🏆 FIM DE JOGO / GAME OVER!\n\nPontuação / Score: ${pontos}/20\n\n${mensagem}`);
+  }
+}
+
+function anterior() { 
+  atual--; carregarPergunta(); 
+}
+
+// Inicia na página 1
+abrirPagina(1);
+</script>
+</body>
+</html>
